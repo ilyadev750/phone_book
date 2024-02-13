@@ -27,7 +27,9 @@ class PhoneBook:
         self.personal_phone_number = None
         self.actions = PrintActions()
         self.line_number = 5
-        self.columns_for_printing = ['Фамилия', 'Имя', 'Отчество', 'Организация', 'Телефон рабочий', 'Телефон сотовый']
+        self.note_number = 1
+        self.finded_notes = {}
+        self.columns_for_printing = ['Номер','Фамилия', 'Имя', 'Отчество', 'Организация', 'Телефон рабочий', 'Телефон сотовый']
 
     def read_file_and_choose_actions(self):
         try:
@@ -46,7 +48,7 @@ class PhoneBook:
             with open('phonebook.txt', 'w') as phonebook:
                 for row in TABLE_TOP:
                     phonebook.write(row)
-            self.actions.print_actions_with_empty_book()
+            self.choose_the_action_with_empty_book()
 
     def add_info_in_object(self):
         self.surname = self.input_text_info_and_check(column=self.surname, column_name='фамилию', length=19)
@@ -62,6 +64,8 @@ class PhoneBook:
             action_number = int(input('Пожалуйста, введите номер действия: '))
             if action_number == 1:
                 self.add_new_note()
+                self.choose_the_action_with_phonebook()
+                break
             elif action_number == 2:
                 break
             else:
@@ -74,25 +78,54 @@ class PhoneBook:
             if action_number == 1:
                 self.print_all_notes()
             elif action_number == 2:
-                self.find_note_by_one_param()
-            elif action_number == 3:
-                self.find_note_by_several_params()
-            elif action_number == 4:
-                self.change_note()
-            elif action_number == 5:
                 self.add_new_note()
-            elif action_number == 6:
-                self.find_and_delete_note()
-            elif action_number == 7:
+            elif action_number == 3:
+                self.find_notes_by_one_param()
+            elif action_number == 4:
+                self.find_note_by_several_params()
+            elif action_number == 5:
                 break
             else:
                 print('Некорректный номер действия!')
 
-    def print_all_notes(self):
+    def choose_the_action_with_finded_notes(self):
         pass
+        # while True:
+        #     self.ac
 
-    def find_note_by_one_param(self):
-        pass
+    def find_notes_by_one_param(self):
+        while True:
+            key_word = None
+            self.finded_notes = {}
+            self.note_number = 1
+            self.actions.print_actions_find_notes_by_one_param()
+            action_number = int(input('Номер действия: '))
+            if action_number in [1, 2, 3, 4]:
+                key_word = self.input_text_info_and_check(column=key_word, column_name='выбранный параметр', length=23)
+                for line in self.all_filestrings:
+                    if key_word in line:
+                        self.finded_notes[self.note_number] = line
+                        self.note_number += 1
+                if self.finded_notes:
+                    print(self.finded_notes)
+                else:
+                    print('Записи на выбранному параметру не найдены')
+                break
+            elif action_number in [5, 6]:
+                key_word = self.input_phone_numbers_and_check(column=key_word, column_name='номер телефона', length=17)
+                for line in self.all_filestrings:
+                    if key_word in line:
+                        self.finded_notes[self.note_number] = line
+                        self.note_number += 1
+                if self.finded_notes:
+                    print(self.finded_notes)
+                else:
+                    print('Записи на выбранному параметру не найдены')
+                break
+            elif action_number == 7:
+                break
+            else:
+                print('Некорректный номер действия!')
 
     def find_note_by_several_params(self):
         pass
@@ -100,7 +133,7 @@ class PhoneBook:
     def change_note(self):
         pass
 
-    def find_and_delete_note(self):
+    def delete_note(self):
         pass
 
     def add_new_note(self):
@@ -108,7 +141,6 @@ class PhoneBook:
         new_note = f'{self.surname:^21}|{self.name:^17}|{self.patronymic:^23}|{self.workplace:^23}|{self.work_phone_number[0]:^17}|{self.personal_phone_number:^17}|\n'
         self.all_filestrings.append(new_note)
         self.sort_notes_and_rewrite_file()
-        self.choose_the_action_with_phonebook()
 
     def print_all_notes(self):
         printing_filestrings = [self.columns_for_printing]
@@ -116,7 +148,9 @@ class PhoneBook:
             line = line.replace('|', ' ')
             line = re.sub('\s+', ' ', line)
             line = list(line.split(" "))
-            printing_filestrings.append(line[1:])
+            line[0] = 1
+            # printing_filestrings.append(line[1:])
+            printing_filestrings.append(line)
         results = tabulate.tabulate(printing_filestrings)
         print(results)
 
