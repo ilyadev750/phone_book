@@ -1,5 +1,7 @@
+import re
+import tabulate
 from printactions import PrintActions
-
+# TODO Поправить паттерн проверки организации
 
 COLUMN_SEPARATORS = '                     |                 |                       |                       |                 |                 |\n'    
 # COLUMNS =         '       Фамилия       |       Имя       |       Отчество        |     Организация       | Телефон рабочий | Телефон сотовый |\n'
@@ -9,11 +11,13 @@ COLUMNS = f"{'Фамилия':^21}|{'Имя':^17}|{'Отчество':^23}|{'О�
 
 TABLE_TOP = [COLUMN_SEPARATORS, COLUMNS, BORDERS, COLUMN_SEPARATORS]
 
+
 class PhoneBook:
 
     def __init__(self) -> None:
         self.new_filestring = None
         self.current_filestring = None
+        self.all_filestrings = []
         self.all_filestrings = []
         self.surname = None
         self.name = None
@@ -22,17 +26,18 @@ class PhoneBook:
         self.work_phone_number = None
         self.personal_phone_number = None
         self.actions = PrintActions()
+        self.line_number = 5
+        self.columns_for_printing = ['Фамилия', 'Имя', 'Отчество', 'Организация', 'Телефон рабочий', 'Телефон сотовый']
 
     def read_file_and_choose_actions(self):
         try:
             with open('phonebook.txt', 'r') as phonebook:
-                for line in phonebook:
-                    # isalnum()
-                    if line.strip()[0] == '|' or line.strip()[0] == '_':
-                        continue
+                for i, line in enumerate(phonebook, 1):
+                    if i == self.line_number:
+                        self.all_filestrings.append(line)
+                        self.line_number += 3
                     else:
-                        self.all_filestrings.append(line.strip())
-            del self.all_filestrings[0]
+                        continue
             if self.all_filestrings:
                 self.choose_the_action_with_phonebook()
             else:
@@ -61,8 +66,6 @@ class PhoneBook:
                 break
             else:
                 print('Некорректный номер действия!')
-
-
 
     def choose_the_action_with_phonebook(self):
         while True:
@@ -102,13 +105,20 @@ class PhoneBook:
 
     def add_new_note(self):
         self.add_info_in_object()
-        self.all_filestrings.append(f'')
         new_note = f'{self.surname:^21}|{self.name:^17}|{self.patronymic:^23}|{self.workplace:^23}|{self.work_phone_number[0]:^17}|{self.personal_phone_number:^17}|\n'
-        with open('phonebook.txt', 'a') as phonebook:
-            phonebook.write(new_note)
-            phonebook.write(BORDERS)
-            phonebook.write(COLUMN_SEPARATORS)
+        self.all_filestrings.append(new_note)
+        self.sort_notes_and_rewrite_file()
         self.choose_the_action_with_phonebook()
+
+    def print_all_notes(self):
+        printing_filestrings = [self.columns_for_printing]
+        for line in self.all_filestrings:
+            line = line.replace('|', ' ')
+            line = re.sub('\s+', ' ', line)
+            line = list(line.split(" "))
+            printing_filestrings.append(line[1:])
+        results = tabulate.tabulate(printing_filestrings)
+        print(results)
 
     def input_text_info_and_check(self, column, column_name, length):
         while True:
@@ -126,6 +136,15 @@ class PhoneBook:
             else:
                 print(f'Введите конкретно {column_name}. Без букв. Длина меньше или равно {length} знаков.')
 
+    def sort_notes_and_rewrite_file(self):
+        self.all_filestrings = sorted(self.all_filestrings, key=lambda x: x.strip()[0])
+        with open('phonebook.txt', 'w') as phonebook:
+            for row in TABLE_TOP:
+                phonebook.write(row)
+            for row in self.all_filestrings:
+                phonebook.write(row)
+                phonebook.write(BORDERS)
+                phonebook.write(COLUMN_SEPARATORS)
 
     def run(self):
         self.read_file_and_choose_actions()
