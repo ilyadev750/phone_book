@@ -111,7 +111,8 @@ class PhoneBook:
             try:
                 self.all_filestrings.remove(self.finded_notes[note_number - 1])
                 del self.finded_notes[note_number - 1]
-                self.print_beautiful_notes(lines=self.finded_notes)
+                if self.finded_notes:
+                    self.print_beautiful_notes(lines=self.finded_notes)
                 self.choose_the_action_after_deleting()
                 break
             except (ValueError, TypeError) as exc:
@@ -132,8 +133,6 @@ class PhoneBook:
                     break
                 else:
                     print('Некорректный номер записи!')
-
-
 
     def find_notes_by_one_param(self):
         while True:
@@ -243,7 +242,7 @@ class PhoneBook:
                 print(f'Введите конкретно {column_name}. Без букв. Длина меньше или равно {length} знаков.')
 
     def sort_notes_and_rewrite_file(self):
-        self.all_filestrings = sorted(self.all_filestrings, key=lambda x: x.strip()[0])
+        self.all_filestrings = sorted(self.all_filestrings, key=lambda x: x.strip().split()[0])
         with open('phonebook.txt', 'w') as phonebook:
             for row in TABLE_TOP:
                 phonebook.write(row)
