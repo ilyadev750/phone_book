@@ -90,8 +90,8 @@ class PhoneBook:
 
     def choose_the_action_with_finded_notes(self):
         while True:
-            self.actions.print_actions_with_finded_notes()
-            action_number = int(input('Введите номер действия :'))
+            self.actions.print_actions_with_finded_notes_before_changing()
+            action_number = int(input('Введите номер действия: '))
             if action_number == 1:
                 self.change_note()
                 break
@@ -103,15 +103,42 @@ class PhoneBook:
             else:
                 print('Номер записи некорректен')
 
-
-            
     def delete_note(self):
-        pass
+        while True:
+            note_number = int(input('Введите номер записи, которую хотите удалить. Введите 0, чтобы вернуться обратно '))
+            if note_number == 0:
+                break
+            try:
+                self.all_filestrings.remove(self.finded_notes[note_number - 1])
+                del self.finded_notes[note_number - 1]
+                self.print_beautiful_notes(lines=self.finded_notes)
+                self.choose_the_action_after_deleting()
+                break
+            except (ValueError, TypeError) as exc:
+                print('Некорректный номер записи!')
+
+    def choose_the_action_after_deleting(self):
+        if not self.finded_notes:
+            self.sort_notes_and_rewrite_file()
+        else:
+            while True:
+                self.actions.print_actions_after_deleting()
+                action = int(input('Введите номер действия: '))
+                if action == 1:
+                    self.sort_notes_and_rewrite_file()
+                    break
+                elif action == 2:
+                    self.delete_note()
+                    break
+                else:
+                    print('Некорректный номер записи!')
+
+
 
     def find_notes_by_one_param(self):
         while True:
             key_word = None
-            self.finded_notes = [self.columns_for_printing]
+            self.finded_notes = []
             self.note_number = 1
             self.actions.print_actions_find_notes_by_one_param()
             action_number = int(input('Номер действия: '))
@@ -119,16 +146,12 @@ class PhoneBook:
                 key_word = self.input_text_info_and_check(column=key_word, column_name='выбранный параметр', length=23)
                 for line in self.all_filestrings:
                     if key_word in line:
-                        line = line.replace('|', ' ')
-                        line = re.sub('\s+', ' ', line)
-                        line = list(line.split(" "))
-                        line[0] = self.note_number
                         self.finded_notes.append(line)
                         self.note_number += 1
                 if self.finded_notes:
-                    results = tabulate.tabulate(self.finded_notes)
-                    print(results)
+                    self.print_beautiful_notes(lines=self.finded_notes)
                     self.choose_the_action_with_finded_notes()
+                    break
                 else:
                     print('Записи на выбранному параметру не найдены')
                 break
@@ -136,16 +159,12 @@ class PhoneBook:
                 key_word = self.input_phone_numbers_and_check(column=key_word, column_name='номер телефона', length=17)
                 for line in self.all_filestrings:
                     if key_word in line:
-                        line = line.replace('|', ' ')
-                        line = re.sub('\s+', ' ', line)
-                        line = list(line.split(" "))
-                        line[0] = self.note_number
                         self.finded_notes.append(line)
                         self.note_number += 1
                 if self.finded_notes:
-                    results = tabulate.tabulate(self.finded_notes)
-                    print(results)
+                    self.print_beautiful_notes(lines=self.finded_notes)
                     self.choose_the_action_with_finded_notes()
+                    break
                 else:
                     print('Записи на выбранному параметру не найдены')
                 break
@@ -154,26 +173,49 @@ class PhoneBook:
             else:
                 print('Некорректный номер действия!')
 
+    def print_beautiful_notes(self, lines):
+        printing_filestrings = [self.columns_for_printing]
+        for i, line in enumerate(lines, 1):
+            line = line.replace('|', ' ')
+            line = re.sub('\s+', ' ', line)
+            line = list(line.split(" "))
+            line[0] = i
+            printing_filestrings.append(line)
+        results = tabulate.tabulate(printing_filestrings)
+        print(results)
+
+
     def find_note_by_several_params(self):
         pass
 
     def change_note(self):
         while True:
-            note_number = int(input('Введите номер записи, которую хотите изменить. Введите 0, чтобы вернуться обратно'))
+            note_number = int(input('Введите номер записи, которую хотите изменить. Введите 0, чтобы вернуться обратно '))
             if note_number == 0:
                 break
             try:
                 self.add_info_in_object()
-                self.finded_notes[note_number - 1] = [note_number - 1, self.surname, self.name, self.patronymic, self.workplace, self.work_phone_number, self.personal_phone_number]
-                # В finded_notes оставить исходный вид, красиво выводить только на консоль. Написать отдельную функцию
-                # для красивого вывода, удалить элемент в all_filestrings, добавить новый в его конец.
-                # Удалить измененный элемент из finded notes. Далее ввести действие сохранить изменения или продолжить работу
-                # с оставшимися записями.
+                self.all_filestrings.remove(self.finded_notes[note_number - 1])
+                self.all_filestrings.append(f'{self.surname:^21}|{self.name:^17}|{self.patronymic:^23}|{self.workplace:^23}|{self.work_phone_number[0]:^17}|{self.personal_phone_number:^17}|\n')
+                self.finded_notes[note_number - 1] = f'{self.surname:^21}|{self.name:^17}|{self.patronymic:^23}|{self.workplace:^23}|{self.work_phone_number[0]:^17}|{self.personal_phone_number:^17}|\n'
+                self.print_beautiful_notes(lines=self.finded_notes)
+                self.choose_the_action_after_changing()
+                break
             except (ValueError, TypeError) as exc:
                 print('Некорректный номер записи!')
 
-    def delete_note(self):
-        pass
+    def choose_the_action_after_changing(self):
+        while True:
+            self.actions.print_actions_with_finded_notes_after_changing()
+            action = int(input('Введите номер действия: '))
+            if action == 1:
+                self.sort_notes_and_rewrite_file()
+                break
+            elif action == 2:
+                self.change_note()
+                break
+            else:
+                print('Номер записи некорректен')
 
     def add_new_note(self):
         self.add_info_in_object()
@@ -182,15 +224,7 @@ class PhoneBook:
         self.sort_notes_and_rewrite_file()
 
     def print_all_notes(self):
-        printing_filestrings = [self.columns_for_printing]
-        for i, line in enumerate(self.all_filestrings, 1):
-            line = line.replace('|', ' ')
-            line = re.sub('\s+', ' ', line)
-            line = list(line.split(" "))
-            line[0] = i
-            printing_filestrings.append(line)
-        results = tabulate.tabulate(printing_filestrings)
-        print(results)
+        self.print_beautiful_notes(lines=self.all_filestrings)
 
     def input_text_info_and_check(self, column, column_name, length):
         while True:
