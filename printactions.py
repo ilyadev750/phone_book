@@ -8,10 +8,15 @@ class PrintActions:
         print('4 - Найти запись по нескольким параметрам')
         print('5 - Закончить работу с телефонной книгой')
 
-    def print_actions_with_finded_notes(self):
+    def print_actions_with_finded_notes_before_changing(self):
         print('1 - Добавить изменения в записи')
         print('2 - Удалить полученные записи')
         print('3 - Вернуться в исходное меню')
+
+    def print_actions_with_finded_notes_after_changing(self):
+        print('1 - Добавить изменения в записи')
+        print('2 - Сохранить записи в файл')
+        print('3 - Отменить изменения и вернуться в исходное меню')
 
     def print_actions_with_empty_book(self):
         print('1 - Добавить новую запись в книгу')
