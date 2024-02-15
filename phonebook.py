@@ -135,42 +135,63 @@ class PhoneBook:
                     print('Некорректный номер записи!')
 
     def find_notes_by_one_param(self):
-        while True:
-            key_word = None
-            self.finded_notes = []
-            self.note_number = 1
-            self.actions.print_actions_find_notes_by_one_param()
-            action_number = int(input('Номер действия: '))
-            if action_number in [1, 2, 3, 4]:
-                key_word = self.input_text_info_and_check(column=key_word, column_name='выбранный параметр', length=23)
-                for line in self.all_filestrings:
-                    if key_word in line:
-                        self.finded_notes.append(line)
-                        self.note_number += 1
-                if self.finded_notes:
-                    self.print_beautiful_notes(lines=self.finded_notes)
-                    self.choose_the_action_with_finded_notes()
-                    break
-                else:
-                    print('Записи на выбранному параметру не найдены')
-                break
-            elif action_number in [5, 6]:
-                key_word = self.input_phone_numbers_and_check(column=key_word, column_name='номер телефона', length=17)
-                for line in self.all_filestrings:
-                    if key_word in line:
-                        self.finded_notes.append(line)
-                        self.note_number += 1
-                if self.finded_notes:
-                    self.print_beautiful_notes(lines=self.finded_notes)
-                    self.choose_the_action_with_finded_notes()
-                    break
-                else:
-                    print('Записи на выбранному параметру не найдены')
-                break
-            elif action_number == 7:
-                break
+        # while True:
+        key_word = None
+        self.finded_notes = []
+        self.note_number = 1
+        self.actions.print_actions_find_notes_by_one_param()
+        action_number = int(input('Номер действия: '))
+        if action_number in [1, 2, 3, 4]:
+            key_word = self.input_text_info_and_check(column=key_word, column_name='выбранный параметр', length=23)
+            for line in self.all_filestrings:
+                if key_word in line:
+                    self.finded_notes.append(line)
+                    self.note_number += 1
+            if self.finded_notes:
+                self.print_beautiful_notes(lines=self.finded_notes)
+                self.choose_the_action_with_finded_notes()
+                # break
             else:
-                print('Некорректный номер действия!')
+                print('Записи на выбранному параметру не найдены')
+            # break
+        elif action_number in [5, 6]:
+            key_word = self.input_phone_numbers_and_check(column=key_word, column_name='номер телефона', length=17)
+            for line in self.all_filestrings:
+                if key_word in line:
+                    self.finded_notes.append(line)
+                    self.note_number += 1
+            if self.finded_notes:
+                self.print_beautiful_notes(lines=self.finded_notes)
+                self.choose_the_action_with_finded_notes()
+                # break
+            else:
+                print('Записи на выбранному параметру не найдены')
+            # break
+        elif action_number == 7:
+            # break
+            return
+        else:
+            print('Некорректный номер действия!')
+
+    def find_note_by_several_params(self):
+        key_word = None
+        self.finded_notes = []
+        self.note_number = 1
+        self.actions.print_actions_find_notes_by_several_params()
+        query = input('Строка запроса: ')
+        query = query.strip()
+        query = re.sub('\s+', ' ', query)
+        query = list(query.split())
+        number_of_matches = 0
+        for line in self.all_filestrings:
+            for param in query:
+                if param in line:
+                    number_of_matches += 1
+            if number_of_matches == len(query):
+                self.finded_notes.append(line)
+            number_of_matches = 0
+        self.print_beautiful_notes(lines=self.finded_notes)
+        self.choose_the_action_with_finded_notes()
 
     def print_beautiful_notes(self, lines):
         printing_filestrings = [self.columns_for_printing]
@@ -183,9 +204,6 @@ class PhoneBook:
         results = tabulate.tabulate(printing_filestrings)
         print(results)
 
-
-    def find_note_by_several_params(self):
-        pass
 
     def change_note(self):
         while True:
