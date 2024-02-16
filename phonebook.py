@@ -11,12 +11,12 @@ TABLE_TOP = [COLUMN_SEPARATORS, COLUMNS, BORDERS, COLUMN_SEPARATORS]
 INPUT_MESSAGE_1 = 'Пожалуйста, введите номер действия: '
 INPUT_MESSAGE_2 = 'Введите номер записи, которую хотите изменить. Введите 0, чтобы вернуться обратно '
 INPUT_MESSAGE_3 = 'Номер параметра: '
+INPUT_MESSAGE_4 = 'Введите номер записи, которую хотите удалить. Введите 0, чтобы вернуться обратно '
 
 class PhoneBook:
 
-    def __init__(self):
-        # self.new_filestring = None
-        # self.current_filestring = None
+    def __init__(self, filename):
+        self.filename = filename
         self.all_filestrings = []
         self.surname = None
         self.name = None
@@ -37,7 +37,7 @@ class PhoneBook:
         то создается новый. """
         print('Начало работы с телефонной книгой')
         try:
-            with open('phonebook.txt', 'r') as phonebook:
+            with open(self.filename, 'r') as phonebook:
                 for i, line in enumerate(phonebook, 1):
                     if i == self.line_number:
                         self.all_filestrings.append(line)
@@ -49,7 +49,7 @@ class PhoneBook:
             else:
                 self.choose_the_action_with_empty_book()
         except FileNotFoundError as exc:
-            with open('phonebook.txt', 'w') as phonebook:
+            with open(self.filename, 'w') as phonebook:
                 for row in TABLE_TOP:
                     phonebook.write(row)
             self.choose_the_action_with_empty_book()
@@ -104,8 +104,11 @@ class PhoneBook:
         self.reset_params()
         self.actions.print_actions_find_notes_by_one_param()
         action_number = self.check_user_action_input(message=INPUT_MESSAGE_3)
-        if 1 <= action_number <= 4:
+        if 1 <= action_number <= 3:
             self.key_word = self.input_text_info_and_check(column=self.key_word, column_name='выбранный параметр', length=23)
+            self.prepare_finded_lines_and_choose_action()
+        elif action_number == 4:
+            self.key_word = self.input_company_info_and_check(column=self.key_word, column_name='выбранный параметр', length=23)
             self.prepare_finded_lines_and_choose_action()
         elif 5 <= action_number <= 6:
             self.key_word = self.input_phone_numbers_and_check(column=self.key_word, column_name='номер телефона', length=17)
@@ -156,7 +159,7 @@ class PhoneBook:
     def delete_note(self):
         """Выбор записи из self.finded_notes, которую нужно удалить"""
         while True:
-            note_number = self.check_user_action_input(message=INPUT_MESSAGE_2)
+            note_number = self.check_user_action_input(message=INPUT_MESSAGE_4)
             if note_number == 0:
                 break
             elif note_number <= len(self.finded_notes):
@@ -250,8 +253,8 @@ class PhoneBook:
         printing_filestrings = [self.columns_for_printing]
         for i, line in enumerate(lines, 1):
             line = line.replace('|', ' ')
-            line = re.sub('\s+', ' ', line)
-            line = list(line.split(" "))
+            line = re.sub('\s{2,}', '  ', line)
+            line = list(line.split("  "))
             line[0] = i
             printing_filestrings.append(line)
         results = tabulate.tabulate(printing_filestrings)
@@ -267,7 +270,7 @@ class PhoneBook:
         self.personal_phone_number = self.input_phone_numbers_and_check(column=self.personal_phone_number, column_name='мобильный телефон', length=17)
 
     def add_new_note(self):
-        """Добавление записи в атрибут self.all_filestrings с сортировка. 
+        """Добавление записи в атрибут self.all_filestrings с сортировкой. 
         Новая перезапись файла для сохранения алфавитного порядка записей"""
         print('Добавьте поочередно данные согласно их типу')
         self.add_info_in_object()
@@ -311,7 +314,7 @@ class PhoneBook:
     def sort_notes_and_rewrite_file(self):
         """Сортировка записей и запись в файл"""
         self.all_filestrings = sorted(self.all_filestrings, key=lambda x: x.strip().split()[0])
-        with open('phonebook.txt', 'w') as phonebook:
+        with open(self.filename, 'w') as phonebook:
             for row in TABLE_TOP:
                 phonebook.write(row)
             for row in self.all_filestrings:
