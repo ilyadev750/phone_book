@@ -2,8 +2,12 @@ import unittest
 import re
 from phonebook import PhoneBook
 
-RAW_STRING = '       Иванов        |      Иван       |       Иванович        |       Сбербанк        |    845632547    |     789634      |\n'
-LIST_DATA = [1, 'Иванов', 'Иван', 'Иванович', 'Сбербанк', '845632547', '789634', ''] 
+RAW_STRING = '       Иванов        |      Иван       |' \
+             'Иванович        |       Сбербанк        |' \
+             '845632547    |     789634      |\n'
+LIST_DATA = [1, 'Иванов', 'Иван', 'Иванович',
+             'Сбербанк', '845632547', '789634', '']
+
 
 class TestBook(unittest.TestCase):
 
@@ -27,10 +31,11 @@ class TestBook(unittest.TestCase):
         self.get_info_from_file()
         line = self.phonebook.all_filestrings[0]
         line = line.replace('|', ' ')
-        line = re.sub('\s{2,}', '  ', line)
+        line = re.sub(r'\s{2,}', '  ', line)
         line = list(line.split("  "))
         line[0] = 1
         self.assertEqual(line, LIST_DATA)
+
 
 if __name__ == "__main__":
     unittest.main()
